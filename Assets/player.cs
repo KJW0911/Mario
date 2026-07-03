@@ -8,14 +8,14 @@ public class player : MonoBehaviour
     private int velocity;
     private int jumpspeed;
     private InputAction moveAction,jumpAction;
-    private const float raycastorigin_offset_x=0.51f;
+    private const float raycastorigin_offset=0.51f;
     private BoxCollider2D playerCollider;
     private Rigidbody2D rb;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {   velocity=10;
-        jumpspeed=10;
+        jumpspeed=12;
         jumptime=0;
         jumpable=false;  
 
@@ -32,16 +32,40 @@ public class player : MonoBehaviour
     void Update()
     {
 
-        float length_of_sensor_ray_for_floors_jumpcheck=0.007f;
-        
+        float length_of_sensor_ray_for_floors_jumpcheck=0.01f;
+        float length_of_sensor_ray_for_walls=0.005f;
 
         Vector2 moveInput=moveAction.ReadValue<Vector2>();
-        Vector3 rayhit_bottom_middle_jumpable_origin=transform.position+(-Vector3.up*playerCollider.size.y*raycastorigin_offset_x);
-        RaycastHit2D rayhit_bottom_middle_jumpable = Physics2D.Raycast(rayhit_bottom_middle_jumpable_origin,Vector2.down,length_of_sensor_ray_for_floors_jumpcheck);
+        Vector3 rayhit_bottom_middle_jumpable_origin=transform.position+new Vector3(0,-1*playerCollider.size.y*raycastorigin_offset,0);
+        Vector3 rayhit_right_middle_wallcheck_origin=transform.position+new Vector3(playerCollider.size.x*raycastorigin_offset,0,0);
+        Vector3 rayhit_left_middle_wallcheck_origin=transform.position+new Vector3(-1*playerCollider.size.x*raycastorigin_offset,0,0);
+
         
+        RaycastHit2D rayhit_bottom_middle_jumpable = Physics2D.Raycast(rayhit_bottom_middle_jumpable_origin,Vector2.down,length_of_sensor_ray_for_floors_jumpcheck);
+        RaycastHit2D rayhit_right_middle_wallcheck = Physics2D.Raycast(rayhit_right_middle_wallcheck_origin,Vector2.right,length_of_sensor_ray_for_walls);
+        RaycastHit2D rayhit_left_middle_wallcheck = Physics2D.Raycast(rayhit_left_middle_wallcheck_origin,Vector2.left,length_of_sensor_ray_for_walls);
 
+        float x_movedirection=moveInput.x;
+        Vector3 movement=new Vector3(velocity*x_movedirection*Time.deltaTime,0,0);
 
-        transform.position+=new Vector3(velocity*moveInput.x*Time.deltaTime,0,0);
+        if (rayhit_left_middle_wallcheck)
+        {
+            if (x_movedirection < 0)
+            {
+                movement=new Vector3(0,0,0);
+            }    
+        }
+
+        if (rayhit_right_middle_wallcheck)
+        {
+            if (x_movedirection > 0)
+            {
+                movement=new Vector3(0,0,0);
+            }
+        }
+
+        
+        transform.position+=movement;
 
 
         if (jumpAction.WasPressedThisFrame() && rayhit_bottom_middle_jumpable)
@@ -62,6 +86,10 @@ public class player : MonoBehaviour
             rb.linearVelocityY=jumpspeed;
             jumptime+=Time.deltaTime;
         }
+
+        
+
+
         transform.rotation=Quaternion.identity;
 
         
