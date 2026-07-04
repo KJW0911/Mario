@@ -36,12 +36,20 @@ public class player : MonoBehaviour
         float length_of_sensor_ray_for_walls=0.005f;
 
         Vector2 moveInput=moveAction.ReadValue<Vector2>();
+
         Vector3 rayhit_bottom_middle_jumpable_origin=transform.position+new Vector3(0,-1*playerCollider.size.y*raycastorigin_offset,0);
+        Vector3 rayhit_bottom_right_jumpable_origin=transform.position+new Vector3(playerCollider.size.x*0.4f,-1*playerCollider.size.y*raycastorigin_offset,0);
+        Vector3 rayhit_bottom_left_jumpable_origin=transform.position+new Vector3(-playerCollider.size.x*0.4f,-1*playerCollider.size.y*raycastorigin_offset,0);
+
         Vector3 rayhit_right_middle_wallcheck_origin=transform.position+new Vector3(playerCollider.size.x*raycastorigin_offset,0,0);
         Vector3 rayhit_left_middle_wallcheck_origin=transform.position+new Vector3(-1*playerCollider.size.x*raycastorigin_offset,0,0);
 
         
         RaycastHit2D rayhit_bottom_middle_jumpable = Physics2D.Raycast(rayhit_bottom_middle_jumpable_origin,Vector2.down,length_of_sensor_ray_for_floors_jumpcheck);
+        RaycastHit2D rayhit_bottom_right_jumpable = Physics2D.Raycast(rayhit_bottom_right_jumpable_origin,Vector2.down,length_of_sensor_ray_for_floors_jumpcheck);
+        RaycastHit2D rayhit_bottom_left_jumpable = Physics2D.Raycast(rayhit_bottom_left_jumpable_origin,Vector2.down,length_of_sensor_ray_for_floors_jumpcheck);
+        
+        
         RaycastHit2D rayhit_right_middle_wallcheck = Physics2D.Raycast(rayhit_right_middle_wallcheck_origin,Vector2.right,length_of_sensor_ray_for_walls);
         RaycastHit2D rayhit_left_middle_wallcheck = Physics2D.Raycast(rayhit_left_middle_wallcheck_origin,Vector2.left,length_of_sensor_ray_for_walls);
 
@@ -68,7 +76,7 @@ public class player : MonoBehaviour
         transform.position+=movement;
 
 
-        if (jumpAction.WasPressedThisFrame() && rayhit_bottom_middle_jumpable)
+        if (jumpAction.WasPressedThisFrame() && (rayhit_bottom_middle_jumpable||rayhit_bottom_left_jumpable||rayhit_bottom_right_jumpable))
         {
             jumpable=true;
         }
@@ -93,5 +101,18 @@ public class player : MonoBehaviour
         transform.rotation=Quaternion.identity;
 
         
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        ContactPoint2D[] contacts=new ContactPoint2D[10];
+        int contactsarraysize=collision.GetContacts(contacts);
+        for(int i = 0; i < contactsarraysize; i++)
+        {
+            if (contacts[i].point.y >= (transform.position.y + playerCollider.size.y * 0.5))
+            {
+                jumpable=false;
+            }
+        }
     }
 }
