@@ -1,29 +1,43 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class player : MonoBehaviour
 {
+
+    public Sprite smallMario;
+    public Sprite bigMario;
     private float jumptime;
     private bool jumpable;
     private int velocity;
-    private int jumpspeed;
+    private float jumpspeed;
     private InputAction moveAction,jumpAction;
     private const float raycastorigin_offset=0.51f;
+    private const float smallMario_jumpspeed=10f;
+    private const float bigMario_jumpspeed=12f;
+    
     private BoxCollider2D playerCollider;
+    private SpriteRenderer mySpriteRenderer; 
     private Rigidbody2D rb;
+
+
+    private bool ate_mushroom; 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {   velocity=10;
-        jumpspeed=12;
+        if(ate_mushroom){jumpspeed=bigMario_jumpspeed;}
+        else{jumpspeed=smallMario_jumpspeed;}
         jumptime=0;
         jumpable=false;  
+        ate_mushroom=false;
 
         moveAction = InputSystem.actions.FindAction("Move");
         jumpAction = InputSystem.actions.FindAction("Jump");
     }
     void Start()
     {
+        mySpriteRenderer=GetComponent<SpriteRenderer>();
         rb=GetComponent<Rigidbody2D>();
         playerCollider=GetComponent<BoxCollider2D>();  
     }
@@ -96,10 +110,7 @@ public class player : MonoBehaviour
         }
 
         
-
-
         transform.rotation=Quaternion.identity;
-
         
     }
 
@@ -113,6 +124,18 @@ public class player : MonoBehaviour
             {
                 jumpable=false;
             }
+        }
+    
+        if (collision.gameObject.tag == "mushroom")
+        {
+            GameObject mushroom=collision.gameObject;
+            Destroy(mushroom);
+            ate_mushroom=true;
+            mySpriteRenderer.sprite=bigMario;
+        }
+        else
+        {
+            return;
         }
     }
 }
