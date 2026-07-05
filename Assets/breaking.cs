@@ -37,7 +37,7 @@ public class breaking : MonoBehaviour
             Vector2 contactpoint=contacts[i].point;
             if (contactpoint.y >= (player.transform.position.y + playerCollidersize.y * 0.5))
             {
-                Vector3 blockworldpos=new Vector3(contactpoint.x,contactpoint.y+0.5f,0);
+                Vector3 blockworldpos=new Vector3(contactpoint.x,contactpoint.y+0.1f,0);
                 Vector3Int cellpos=tilemap.WorldToCell(blockworldpos);
                 tilemap.SetTile(cellpos,null);
             }

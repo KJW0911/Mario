@@ -13,25 +13,28 @@ public class player : MonoBehaviour
     private float jumpspeed;
     private InputAction moveAction,jumpAction;
     private const float raycastorigin_offset=0.51f;
-    private const float smallMario_jumpspeed=10f;
-    private const float bigMario_jumpspeed=12f;
-    
+    private const float smallMario_jumpspeed=9f;
+    private const float bigMario_jumpspeed=11f;
+    private const float smallMario_collidersizeY=1f;
+    private const float bigMario_collidersizeY=1.5f;
+
     private BoxCollider2D playerCollider;
     private SpriteRenderer mySpriteRenderer; 
     private Rigidbody2D rb;
+    
 
 
     private bool ate_mushroom; 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
-    {   velocity=10;
-        if(ate_mushroom){jumpspeed=bigMario_jumpspeed;}
-        else{jumpspeed=smallMario_jumpspeed;}
+    {   
+        velocity=10;
         jumptime=0;
         jumpable=false;  
         ate_mushroom=false;
-
+        if(ate_mushroom){jumpspeed=bigMario_jumpspeed;}
+        else{jumpspeed=smallMario_jumpspeed;}
         moveAction = InputSystem.actions.FindAction("Move");
         jumpAction = InputSystem.actions.FindAction("Jump");
     }
@@ -97,13 +100,11 @@ public class player : MonoBehaviour
 
         if (jumpAction.WasReleasedThisFrame())
         {
-            Debug.Log("Released");
-
             jumpable=false;
             jumptime=0;
         }
 
-        if (jumpable&&(jumptime<=0.3))
+        if (jumpable&&(jumptime<=0.3f))
         {
             rb.linearVelocityY=jumpspeed;
             jumptime+=Time.deltaTime;
@@ -120,7 +121,8 @@ public class player : MonoBehaviour
         int contactsarraysize=collision.GetContacts(contacts);
         for(int i = 0; i < contactsarraysize; i++)
         {
-            if (contacts[i].point.y >= (transform.position.y + playerCollider.size.y * 0.5))
+            float bumpheadoffset=0.49f;
+            if (contacts[i].point.y >= (transform.position.y + playerCollider.size.y * bumpheadoffset))
             {
                 jumpable=false;
             }
@@ -132,6 +134,8 @@ public class player : MonoBehaviour
             Destroy(mushroom);
             ate_mushroom=true;
             mySpriteRenderer.sprite=bigMario;
+            playerCollider.size=new Vector2(playerCollider.size.x,bigMario_collidersizeY);
+            jumpspeed=bigMario_jumpspeed;
         }
         else
         {
