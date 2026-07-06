@@ -1,6 +1,8 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class player : MonoBehaviour
 {
@@ -9,27 +11,27 @@ public class player : MonoBehaviour
     public Sprite bigMario;
     private float jumptime;
     private bool jumpable;
-    private int velocity;
+    private float velocity;
+    private const float maxVelocity=10f;
+    private const float accel=100f; 
     private float jumpspeed;
     private InputAction moveAction,jumpAction;
     private const float raycastorigin_offset=0.51f;
-    private const float smallMario_jumpspeed=9f;
-    private const float bigMario_jumpspeed=11f;
+    private const float smallMario_jumpspeed=11.5f;
+    private const float bigMario_jumpspeed=12.5f;
     private const float smallMario_collidersizeY=1f;
     private const float bigMario_collidersizeY=1.5f;
 
     private BoxCollider2D playerCollider;
     private SpriteRenderer mySpriteRenderer; 
     private Rigidbody2D rb;
-    
-
 
     private bool ate_mushroom; 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {   
-        velocity=10;
+        velocity=0;
         jumptime=0;
         jumpable=false;  
         ate_mushroom=false;
@@ -71,6 +73,22 @@ public class player : MonoBehaviour
         RaycastHit2D rayhit_left_middle_wallcheck = Physics2D.Raycast(rayhit_left_middle_wallcheck_origin,Vector2.left,length_of_sensor_ray_for_walls);
 
         float x_movedirection=moveInput.x;
+
+        if (x_movedirection == 0)
+        {
+            velocity=0;
+        }
+        else if (velocity < maxVelocity)
+        {
+            velocity+=accel*Time.deltaTime;
+        }
+        
+        
+        if(velocity>=maxVelocity)
+        {
+            velocity=maxVelocity;
+        }
+
         Vector3 movement=new Vector3(velocity*x_movedirection*Time.deltaTime,0,0);
 
         if (rayhit_left_middle_wallcheck)
@@ -126,6 +144,24 @@ public class player : MonoBehaviour
             {
                 jumpable=false;
             }
+            if (collision.gameObject.tag == "goomba")
+            {
+                if (contacts[i].point.y <= transform.position.y - playerCollider.size.y*0.2f)
+                {
+                    Destroy(collision.gameObject);
+                    return;
+                }
+                
+                if (ate_mushroom)
+                {
+                    ate_mushroom=false;
+                    changeTosmallMario();
+                    
+                    return;
+                }
+                Debug.Log("Game Over");
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
         }
     
         if (collision.gameObject.tag == "mushroom")
@@ -133,13 +169,20 @@ public class player : MonoBehaviour
             GameObject mushroom=collision.gameObject;
             Destroy(mushroom);
             ate_mushroom=true;
-            mySpriteRenderer.sprite=bigMario;
-            playerCollider.size=new Vector2(playerCollider.size.x,bigMario_collidersizeY);
+            changeTobigMario();
             jumpspeed=bigMario_jumpspeed;
-        }
-        else
-        {
             return;
-        }
+        }  
+    }
+
+    private void changeTobigMario()
+    {
+        mySpriteRenderer.sprite=bigMario;
+        playerCollider.size=new Vector2(playerCollider.size.x,bigMario_collidersizeY);
+    }
+    private void changeTosmallMario()
+    {
+        mySpriteRenderer.sprite=smallMario;
+        playerCollider.size=new Vector2(playerCollider.size.x,smallMario_collidersizeY);
     }
 }
