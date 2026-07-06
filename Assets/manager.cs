@@ -41,6 +41,7 @@ public class manager : MonoBehaviour
     }
     public void cleared()
     {
+        if(!flagOn){return;}
         isclear=true;
         Time.timeScale=0f;
         Debug.Log("Cleared!");

@@ -18,6 +18,6 @@ public class entry : MonoBehaviour
     void OnTriggerEnter2D(Collider2D collision)
     {
         if(collision.gameObject.tag!="Player"){return;}
-        managerScript.cleared();
+        managerScript.cleared();    
     }
 }
